@@ -6,6 +6,10 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+
+	"github.com/tessahoffmann/goqb/query"
+	"github.com/tessahoffmann/goqb/util"
+	"github.com/tessahoffmann/goqb/where"
 )
 
 type Model struct {
@@ -13,6 +17,22 @@ type Model struct {
 	Fields     []string
 	Identifier string
 	db         *sql.DB
+}
+
+func (self Model) Where(field string, operator string, value interface{}) query.Query {
+	return query.Query{
+		Table:      self.Table,
+		Fields:     self.Fields,
+		Identifier: self.Identifier,
+		WhereChain: []where.IWhere{
+			where.Where{
+				Field:    field,
+				Operator: operator,
+				Value:    value,
+			},
+		},
+		DB: self.db,
+	}
 }
 
 func (self Model) Find(id interface{}, obj interface{}) error {
@@ -26,7 +46,7 @@ func (self Model) Find(id interface{}, obj interface{}) error {
 	}
 
 	var query = fmt.Sprintf(`SELECT %s FROM %s WHERE %s = ?;`, strings.Join(self.Fields, ", "), self.Table, self.Identifier)
-	err := self.db.QueryRow(query, id).Scan(ScanFields(s)...)
+	err := self.db.QueryRow(query, id).Scan(util.ScanFields(s)...)
 	if err != nil {
 		return err
 	}
@@ -52,7 +72,7 @@ func (self Model) All(obj interface{}) error {
 
 	for rows.Next() {
 		var inst = reflect.New(s.Type().Elem())
-		err = rows.Scan(ScanFields(inst)...)
+		err = rows.Scan(util.ScanFields(inst)...)
 		if err != nil {
 			return err
 		}
@@ -69,7 +89,7 @@ func (self Model) Update(id interface{}, obj interface{}) error {
 		return errors.New("obj has to be a struct")
 	}
 
-	vals := append(ValueFields(v), id)
+	vals := append(util.ValueFields(v), id)
 
 	var query = fmt.Sprintf(`UPDATE %s SET %s = ? WHERE %s = ?;`, self.Table, strings.Join(self.Fields, " = ?, "), self.Identifier)
 	_, err := self.db.Exec(query, vals...)
@@ -90,11 +110,11 @@ func (self Model) Create(obj interface{}) error {
 		return errors.New("obj has to be a pointer to a struct")
 	}
 
-	vals := ValueFields(v, self.Identifier)
+	vals := util.ValueFields(v, self.Identifier)
 
 	placeholder := strings.TrimRight(strings.Repeat("?, ", len(vals)), ", ")
 
-	var query = fmt.Sprintf(`INSERT INTO %s(%s) VALUES(%s);`, self.Table, ObjectFields(s.Type(), self.Identifier), placeholder)
+	var query = fmt.Sprintf(`INSERT INTO %s(%s) VALUES(%s);`, self.Table, util.ObjectFields(s.Type(), self.Identifier), placeholder)
 	result, err := self.db.Exec(query, vals...)
 	if err != nil {
 		return err
@@ -105,7 +125,7 @@ func (self Model) Create(obj interface{}) error {
 		return err
 	}
 
-	s.Field(IndexFieldTag(s.Type(), self.Identifier)).SetInt(liid)
+	s.Field(util.IndexFieldTag(s.Type(), self.Identifier)).SetInt(liid)
 
 	return nil
 }

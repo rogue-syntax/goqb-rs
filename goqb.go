@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"errors"
 	"reflect"
+
+	"github.com/tessahoffmann/goqb/util"
 )
 
 var (
@@ -32,7 +34,7 @@ func (self GoQB) Model(table string, obj interface{}) Model {
 			t = t.Elem()
 		}
 		if t.Kind() == reflect.Struct {
-			fields = ObjectFields(t)
+			fields = util.ObjectFields(t)
 		} else {
 			if t.Kind() == reflect.Slice {
 				f, ok := obj.([]string)
