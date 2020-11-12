@@ -14,7 +14,7 @@ func (s Sort) String() string {
 	if s.Field == "" && s.Direction == "" {
 		return ""
 	}
-	return strings.Trim(fmt.Sprintf(`SORT BY %s %s`, s.Field, s.Direction), " ")
+	return strings.Trim(fmt.Sprintf(`ORDER BY %s %s`, s.Field, s.Direction), " ")
 }
 
 func (self Query) SortBy(field string) Query {

@@ -13,7 +13,7 @@ func TestSort(t *testing.T) {
 	}
 	q = q.SortByDesc("sort_col")
 
-	if !assert.Equal(t, q.String(), "SELECT * FROM testing SORT BY sort_col DESC;") {
+	if !assert.Equal(t, q.String(), "SELECT * FROM testing ORDER BY sort_col DESC;") {
 		t.Error("Query string was incorrect")
 	}
 }
