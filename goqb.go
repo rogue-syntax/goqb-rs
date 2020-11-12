@@ -2,7 +2,12 @@ package goqb
 
 import (
 	"database/sql"
+	"errors"
 	"reflect"
+)
+
+var (
+	ErrNothingChanged = errors.New("nothing changed")
 )
 
 type GoQB struct {

@@ -25,9 +25,6 @@ func (self Model) Find(id interface{}, obj interface{}) error {
 		return errors.New("obj has to be a pointer to a struct")
 	}
 
-	if self.Identifier == "" {
-		self.Identifier = "id"
-	}
 	var query = fmt.Sprintf(`SELECT %s FROM %s WHERE %s = ?;`, strings.Join(self.Fields, ", "), self.Table, self.Identifier)
 	err := self.db.QueryRow(query, id).Scan(ScanFields(s)...)
 	if err != nil {
@@ -63,6 +60,71 @@ func (self Model) All(obj interface{}) error {
 		s.Set(reflect.Append(s, inst.Elem()))
 	}
 
+	return nil
+}
+
+func (self Model) Update(id interface{}, obj interface{}) error {
+	var v = reflect.ValueOf(obj)
+	if v.Kind() != reflect.Struct {
+		return errors.New("obj has to be a struct")
+	}
+
+	vals := append(ValueFields(v), id)
+
+	var query = fmt.Sprintf(`UPDATE %s SET %s = ? WHERE %s = ?;`, self.Table, strings.Join(self.Fields, " = ?, "), self.Identifier)
+	_, err := self.db.Exec(query, vals...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (self Model) Create(obj interface{}) error {
+	var v = reflect.ValueOf(obj)
+	if v.Kind() != reflect.Ptr {
+		return errors.New("obj has to be a pointer")
+	}
+	var s = v.Elem()
+	if s.Kind() != reflect.Struct {
+		return errors.New("obj has to be a pointer to a struct")
+	}
+
+	vals := ValueFields(v, self.Identifier)
+
+	placeholder := strings.TrimRight(strings.Repeat("?, ", len(vals)), ", ")
+
+	var query = fmt.Sprintf(`INSERT INTO %s(%s) VALUES(%s);`, self.Table, ObjectFields(s.Type(), self.Identifier), placeholder)
+	result, err := self.db.Exec(query, vals...)
+	if err != nil {
+		return err
+	}
+
+	liid, err := result.LastInsertId()
+	if err != nil {
+		return err
+	}
+
+	s.Field(IndexFieldTag(s.Type(), self.Identifier)).SetInt(liid)
+
+	return nil
+}
+
+func (self Model) Delete(id interface{}) error {
+	var query = fmt.Sprintf(`DELETE FROM %s WHERE %s = ?;`, self.Table, self.Identifier)
+	result, err := self.db.Exec(query, id)
+	if err != nil {
+		return err
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rows == 0 {
+		return ErrNothingChanged
+	}
 	return nil
 }
 

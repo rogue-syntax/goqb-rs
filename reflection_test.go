@@ -104,3 +104,95 @@ func TestModelAll(t *testing.T) {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
 }
+
+func TestModelUpdate(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	mock.ExpectExec("UPDATE books SET name = \\?, author = \\? WHERE id = \\?;").WithArgs("newName", "newAuthor", 1).WillReturnResult(sqlmock.NewResult(1, 1))
+
+	type Update struct {
+		Name   string
+		Author string
+	}
+
+	update := Update{"newName", "newAuthor"}
+
+	err = GoQB{db}.Model("books", update).Update(1, update)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestModelCreate(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	mock.ExpectExec("INSERT INTO books").WithArgs("Testbuch", "Testautor").WillReturnResult(sqlmock.NewResult(15, 1))
+
+	insert := Book{
+		Name:   "Testbuch",
+		Author: "Testautor",
+	}
+
+	err = GoQB{db}.Model("books", insert).Create(&insert)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+
+	if insert.ID != 15 {
+		t.Error("Expected ID to be 15, was not")
+	}
+}
+
+func TestModelDelete(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	mock.ExpectExec("DELETE FROM books").WithArgs(15).WillReturnResult(sqlmock.NewResult(0, 1))
+
+	err = GoQB{db}.Model("books", Book{}).Delete(15)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestModelDeleteNoResult(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	mock.ExpectExec("DELETE FROM books").WithArgs(15).WillReturnResult(sqlmock.NewResult(0, 0))
+
+	err = GoQB{db}.Model("books", Book{}).Delete(15)
+	if err != ErrNothingChanged {
+		t.Error(err)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
