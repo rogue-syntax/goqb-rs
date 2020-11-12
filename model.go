@@ -9,9 +9,32 @@ import (
 )
 
 type Model struct {
-	Table  string
-	Fields []string
-	db     *sql.DB
+	Table      string
+	Fields     []string
+	Identifier string
+	db         *sql.DB
+}
+
+func (self Model) Find(id interface{}, obj interface{}) error {
+	var v = reflect.ValueOf(obj)
+	if v.Kind() != reflect.Ptr {
+		return errors.New("obj has to be a pointer")
+	}
+	var s = v.Elem()
+	if s.Kind() != reflect.Struct {
+		return errors.New("obj has to be a pointer to a struct")
+	}
+
+	if self.Identifier == "" {
+		self.Identifier = "id"
+	}
+	var query = fmt.Sprintf(`SELECT %s FROM %s WHERE %s = ?;`, strings.Join(self.Fields, ", "), self.Table, self.Identifier)
+	err := self.db.QueryRow(query, id).Scan(ScanFields(s)...)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (self Model) All(obj interface{}) error {

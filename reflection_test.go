@@ -1,6 +1,7 @@
 package goqb
 
 import (
+	"database/sql"
 	"log"
 	"reflect"
 	"testing"
@@ -34,6 +35,50 @@ func TestModel(t *testing.T) {
 
 	if !assert.Equal(t, books.String(), "SELECT id, name, author FROM books;") {
 		t.Error("SELECT query doesn't match")
+	}
+}
+
+func TestModelFind(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	mock.ExpectQuery("SELECT id, name, author FROM books WHERE id = \\?;").WillReturnRows(sqlmock.NewRows([]string{"id", "name", "author"}).AddRow(1, "Test Buch", "Max Mustermann").AddRow(2, "ABC Buch", "Maria Mustermann"))
+
+	book := Book{}
+
+	err = GoQB{db}.Model("books", Book{}).Find(1, &book)
+	if err != nil {
+		t.Error(err)
+	}
+
+	log.Printf("%v", book)
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestModelFindErr(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	mock.ExpectQuery("SELECT id, name, author FROM books WHERE id = \\?;").WillReturnError(sql.ErrNoRows)
+
+	book := Book{}
+
+	err = GoQB{db}.Model("books", Book{}).Find(3, &book)
+	if err != sql.ErrNoRows {
+		t.Error("Error was not ErrNoRows")
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
 }
 

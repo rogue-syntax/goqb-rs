@@ -39,8 +39,9 @@ func (self GoQB) Model(table string, obj interface{}) Model {
 	}
 
 	return Model{
-		Table:  table,
-		Fields: fields,
-		db:     self.DB,
+		Table:      table,
+		Fields:     fields,
+		Identifier: "id",
+		db:         self.DB,
 	}
 }

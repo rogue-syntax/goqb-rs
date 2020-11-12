@@ -22,7 +22,10 @@ func ObjectFields(t reflect.Type) (fields []string) {
 }
 
 func ScanFields(val reflect.Value) []interface{} {
-	v := val.Elem()
+	v := val
+	if val.Kind() == reflect.Ptr {
+		v = val.Elem()
+	}
 	vs := []interface{}{}
 	for i := 0; i < v.NumField(); i++ {
 		var tag = v.Type().Field(i).Tag.Get("db")
