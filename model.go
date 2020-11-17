@@ -8,15 +8,44 @@ import (
 	"strings"
 
 	"github.com/tessahoffmann/goqb/query"
+	"github.com/tessahoffmann/goqb/relationship"
 	"github.com/tessahoffmann/goqb/util"
 	"github.com/tessahoffmann/goqb/where"
 )
 
 type Model struct {
-	Table      string
-	Fields     []string
-	Identifier string
-	db         *sql.DB
+	Table         string
+	Fields        []string
+	Identifier    string
+	Relationships relationship.Relationships
+	db            *sql.DB
+}
+
+func (self Model) With(relation string) query.Query {
+	rel, ok := self.Relationships[relation]
+	if !ok {
+		return query.Query{
+			Table:      self.Table,
+			Fields:     self.Fields,
+			Identifier: self.Identifier,
+			DB:         self.db,
+		}
+	}
+
+	fields := []string{}
+
+	for _, field := range self.Fields {
+		fields = append(fields, self.Table+"."+field)
+	}
+
+	return query.Query{
+		Table:      self.Table,
+		Fields:     append(fields, rel.Fields()...),
+		Identifier: self.Identifier,
+		Join:       rel.String(self.Table, self.Identifier),
+		JoinIndex:  rel.Index(),
+		DB:         self.db,
+	}
 }
 
 func (self Model) Where(field string, operator string, value interface{}) query.Query {

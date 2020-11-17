@@ -103,6 +103,39 @@ Will result in:
 SELECT id, name, author FROM books WHERE author = 'Herman Melville' ORDER BY 'name' DESC;
 ```
 
+## Relationships
+Relationships are defined inside the main model's struct with the ```qb``` tag.
+Only HasMany Relationships are implemented right now.
+
+```go
+type Library struct {
+	ID   int    `db:"id"`
+	Name string `db:"name"`
+
+	Books []Book `qb:"hasMany"`
+}
+var TableName = "libraries"
+
+libraryModel := qb.Model(TableName, Library{})
+```
+
+You can also specify the foreign table name and foreign key like this:
+```go
+Books []Book `qb:"hasMany,books,library_id"`
+```
+Otherwise this information will be automatically generated (only works with simple plurals and ```singular_id```-pattern foreign keys).
+
+### Querying Relationships
+```go
+libraries := []Library{}
+libraryModel.With("books").SortByDesc("name").Get(&libraries)
+```
+Will result in:
+```sql
+SELECT libraries.id, libraries.name, books.id, books.name, books.author FROM libraries JOIN books ON books.library_id = libraries.id;
+```
+
+
 ## ToDo
 * Automatically check fields on update and create, so you don't have to make a new model instance for those operations (currently it will throw an error because the insert/update fields will be generated from the struct you instantiated the model with)
 * Add a ```Sort()``` function to Model

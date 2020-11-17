@@ -3,27 +3,26 @@ package goqb
 import (
 	"database/sql"
 	"log"
+	"reflect"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/stretchr/testify/assert"
 )
+
+type Library struct {
+	ID   int    `db:"id"`
+	Name string `db:"name"`
+
+	Books []Book `qb:"hasMany"`
+}
 
 type Book struct {
 	ID        int    `db:"id"`
 	Name      string `db:"name"`
 	Author    string
 	Generated string `db:"-"`
-}
 
-func TestModel(t *testing.T) {
-	book := Book{}
-
-	books := GoQB{nil}.Model("books", book)
-
-	if !assert.Equal(t, books.String(), "SELECT id, name, author FROM books;") {
-		t.Error("SELECT query doesn't match")
-	}
+	LibraryID int `db:"-"`
 }
 
 func TestModelFind(t *testing.T) {
@@ -182,5 +181,54 @@ func TestModelDeleteNoResult(t *testing.T) {
 
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestModelWith(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	var expect = []Library{
+		{
+			ID:   1,
+			Name: "Barack Obama Presidential Library",
+			Books: []Book{
+				{
+					ID:     1,
+					Name:   "Test Buch",
+					Author: "Max Mustermann",
+				},
+				{
+					ID:     2,
+					Name:   "ABC Buch",
+					Author: "Maria Mustermann",
+				},
+			},
+		},
+	}
+
+	mock.ExpectQuery("SELECT libraries.id, libraries.name, books.id, books.name, books.author FROM libraries JOIN books ON books.library_id = libraries.id").WillReturnRows(
+		sqlmock.NewRows(
+			[]string{"libraries.id", "libraries.name", "books.id", "books.name", "books.author"}).AddRow(
+			1, "Barack Obama Presidential Library", 1, "Test Buch", "Max Mustermann").AddRow(
+			1, "Barack Obama Presidential Library", 2, "ABC Buch", "Maria Mustermann"))
+
+	var libraries = []Library{}
+	err = GoQB{db}.Model("libraries", Library{}).With("books").Get(&libraries)
+	if err != nil {
+		t.Error(err)
+	}
+
+	log.Printf("%v", libraries)
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+
+	if !reflect.DeepEqual(libraries, expect) {
+		t.Error("results don't match")
 	}
 }
