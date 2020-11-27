@@ -48,6 +48,15 @@ func (self Model) With(relation string) query.Query {
 	}
 }
 
+func (self Model) Query() query.Query {
+	return query.Query{
+		Table:      self.Table,
+		Fields:     self.Fields,
+		Identifier: self.Identifier,
+		DB:         self.db,
+	}
+}
+
 func (self Model) Where(field string, operator string, value interface{}) query.Query {
 	return query.Query{
 		Table:      self.Table,
