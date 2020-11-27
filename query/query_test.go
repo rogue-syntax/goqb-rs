@@ -51,3 +51,19 @@ func TestWhereJSONContains(t *testing.T) {
 		t.Error("Args were incorrect")
 	}
 }
+
+func TestWhereHasMany(t *testing.T) {
+	q := Query{
+		Fields: []string{"*"},
+		Table:  "books",
+	}
+	q = q.WhereHasMany("id", "IN", 1, "library_books", "book_id", "library_id")
+
+	if !assert.Equal(t, q.String(), "SELECT * FROM books WHERE id IN (SELECT library_books.book_id FROM library_books WHERE library_books.library_id = ?);") {
+		t.Error("Query string was incorrect")
+	}
+
+	if !assert.ElementsMatch(t, q.Args(), []interface{}{1}) {
+		t.Error("Args were incorrect")
+	}
+}

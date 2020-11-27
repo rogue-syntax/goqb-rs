@@ -57,3 +57,21 @@ func (self Query) OrWhereFunc(f func(Query) Query) Query {
 	})
 	return self
 }
+
+func (self Query) WhereHasMany(field string, operator string, value interface{}, pivotTable string, idField string, foreignIDField string) Query {
+	w := where.WhereSubquery{
+		Chain:          "AND",
+		Field:          field,
+		Operator:       operator,
+		PivotTable:     pivotTable,
+		IDField:        idField,
+		ForeignIDField: foreignIDField,
+		Value:          value,
+	}
+	if len(self.WhereChain) == 0 {
+		w.Chain = ""
+	}
+
+	self.WhereChain = append(self.WhereChain, w)
+	return self
+}

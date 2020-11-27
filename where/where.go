@@ -50,6 +50,28 @@ func (wf WhereFunction) Args() []interface{} {
 	return []interface{}{wf.Value}
 }
 
+type WhereSubquery struct {
+	Chain          string
+	Field          string
+	Operator       string
+	PivotTable     string
+	IDField        string
+	ForeignIDField string
+	Value          interface{}
+}
+
+func (ws WhereSubquery) SetChain(chain string) {
+	ws.Chain = chain
+}
+
+func (ws WhereSubquery) WhereString() string {
+	return strings.Trim(fmt.Sprintf("%s %s %s (SELECT %s.%s FROM %s WHERE %s.%s = ?)", ws.Chain, ws.Field, ws.Operator, ws.PivotTable, ws.IDField, ws.PivotTable, ws.PivotTable, ws.ForeignIDField), " ")
+}
+
+func (ws WhereSubquery) Args() []interface{} {
+	return []interface{}{ws.Value}
+}
+
 type WhereGroup struct {
 	Chain string
 	Where []IWhere
