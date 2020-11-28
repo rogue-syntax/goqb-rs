@@ -152,7 +152,7 @@ func (self Model) Create(obj interface{}) error {
 
 	placeholder := strings.TrimRight(strings.Repeat("?, ", len(vals)), ", ")
 
-	var query = fmt.Sprintf(`INSERT INTO %s(%s) VALUES(%s);`, self.Table, util.ObjectFields(s.Type(), self.Identifier), placeholder)
+	var query = fmt.Sprintf(`INSERT INTO %s(%s) VALUES(%s);`, self.Table, strings.Join(util.ObjectFields(s.Type(), self.Identifier), ", "), placeholder)
 	result, err := self.db.Exec(query, vals...)
 	if err != nil {
 		return err
