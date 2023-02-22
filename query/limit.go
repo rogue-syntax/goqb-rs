@@ -1,4 +1,4 @@
-package query
+package limit
 
 import (
 	"fmt"
