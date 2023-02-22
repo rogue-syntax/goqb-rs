@@ -1,4 +1,4 @@
-module github.com/tessahoffmann/goqb
+module github.com/rogue-syntax/goqb-rs
 
 go 1.15
 
