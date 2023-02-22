@@ -7,10 +7,10 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/tessahoffmann/goqb/query"
-	"github.com/tessahoffmann/goqb/relationship"
-	"github.com/tessahoffmann/goqb/util"
-	"github.com/tessahoffmann/goqb/where"
+	"github.com/rogue-syntax/goqb-rs/query"
+	"github.com/rogue-syntax/goqb-rs/relationship"
+	"github.com/rogue-syntax/goqb-rs/util"
+	"github.com/rogue-syntax/goqb-rs/where"
 )
 
 type Model struct {

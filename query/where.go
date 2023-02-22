@@ -1,6 +1,6 @@
 package query
 
-import "github.com/tessahoffmann/goqb/where"
+import "github.com/rogue-syntax/goqb-rs/where"
 
 func (self Query) Where(field string, operator string, value interface{}) Query {
 	w := where.Where{

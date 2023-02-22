@@ -5,8 +5,8 @@ import (
 	"errors"
 	"reflect"
 
-	"github.com/tessahoffmann/goqb/relationship"
-	"github.com/tessahoffmann/goqb/util"
+	"github.com/rogue-syntax/goqb-rs/relationship"
+	"github.com/rogue-syntax/goqb-rs/util"
 )
 
 var (

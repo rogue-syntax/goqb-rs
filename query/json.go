@@ -1,7 +1,7 @@
 package query
 
 import (
-	"github.com/tessahoffmann/goqb/where"
+	"github.com/rogue-syntax/goqb-rs/where"
 )
 
 func (q Query) WhereJSONContains(field string, path string, value interface{}) Query {

@@ -7,8 +7,8 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/tessahoffmann/goqb/util"
-	"github.com/tessahoffmann/goqb/where"
+	"github.com/rogue-syntax/goqb-rs/util"
+	"github.com/rogue-syntax/goqb-rs/where"
 )
 
 type Fields []string

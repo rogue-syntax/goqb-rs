@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/tessahoffmann/goqb/relationship"
+	"github.com/rogue-syntax/goqb-rs/relationship"
 )
 
 func ObjectFields(t reflect.Type, ignores ...string) (fields []string) {

@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/rogue-syntax/goqb-rs/relationship"
 	"github.com/stretchr/testify/assert"
-	"github.com/tessahoffmann/goqb/relationship"
 )
 
 func TestModel(t *testing.T) {
