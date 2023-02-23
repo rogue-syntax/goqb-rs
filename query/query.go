@@ -25,6 +25,7 @@ type Query struct {
 	JoinIndex  int
 	WhereChain where.WhereChain
 	Sort       Sort
+	Limit      Limit
 	DB         *sql.DB
 }
 
