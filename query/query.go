@@ -122,7 +122,7 @@ func (self Query) getWithJoin(obj interface{}) error {
 }
 
 func (self Query) String() string {
-	operations := strings.Trim(strings.Join([]string{self.WhereChain.String(), self.Sort.String()}, " "), " ")
+	operations := strings.Trim(strings.Join([]string{self.WhereChain.String(), self.Sort.String(), self.Limit.String()}, " "), " ")
 	if self.Join != "" {
 		operations = self.Join + " " + operations
 	}

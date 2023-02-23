@@ -14,7 +14,7 @@ func (s Limit) String() string {
 	if s.Offset == "" && s.Limit == "" {
 		return ""
 	}
-	return strings.Trim(fmt.Sprintf(`OFFSET %s LIMIT %s`, s.Offset, s.Limit), " ")
+	return strings.Trim(fmt.Sprintf(`LIMIT %s OFFSET %s `, s.Limit, s.Offset), " ")
 }
 
 func (self Query) OffsetLimit(offset string, limit string) Query {
